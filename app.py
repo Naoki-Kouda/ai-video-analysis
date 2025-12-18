@@ -7,6 +7,7 @@ Render対応版（デバッグ強化 + 遅延初期化 + ヘルスチェック�
 from flask import Flask, request, render_template, jsonify, session
 from openai import OpenAI
 import os
+import httpx
 import sys
 import base64
 import subprocess
@@ -95,7 +96,7 @@ def init_openai(force: bool = False) -> bool:
         return False
 
     try:
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(api_key=api_key,http_client=httpx.Client(timeout=60.0),)
         last_openai_init_error = None
         print("✅ OpenAI クライアント初期化成功")
         return True
