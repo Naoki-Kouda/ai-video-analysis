@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 動画分析ツール - Flaskアプリケーション
-Render対応版
+Render対応版（修正版）
 """
 
 from flask import Flask, request, render_template, jsonify, session, send_file
@@ -411,14 +411,17 @@ def download_pdf():
     </html>
     """
 
+# ★★★ 重要：Gunicorn起動時も確実に初期化 ★★★
+print("\n" + "=" * 60)
+print("🚀 アプリケーション初期化")
+print("=" * 60)
+init_openai()
+print("=" * 60 + "\n")
+
 if __name__ == '__main__':
-    print("\n" + "=" * 60)
-    print("🚀 動画分析ツール起動")
-    print("=" * 60)
-    
-    # 起動時にOpenAI初期化
-    if not init_openai():
-        print("\n❌ エラー: OpenAI APIキーの設定に問題があります")
+    # ローカル開発時のチェック
+    if not client:
+        print("❌ エラー: OpenAI APIキーの設定に問題があります")
         print("環境変数 OPENAI_API_KEY を設定してください")
         sys.exit(1)
     
