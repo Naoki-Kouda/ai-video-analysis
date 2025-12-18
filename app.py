@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 動画分析ツール - Flaskアプリケーション
-Render対応版（修正版 v2）
+Render対応版（修正版 v3 - OpenAI初期化エラー修正）
 """
 
 from flask import Flask, request, render_template, jsonify, session, send_file
@@ -50,7 +50,7 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB制限
 client = None
 
 def init_openai():
-    """OpenAI クライアントを初期化"""
+    """OpenAI クライアントを初期化（修正版）"""
     global client
     api_key = os.environ.get('OPENAI_API_KEY', '').strip()
     
@@ -63,11 +63,14 @@ def init_openai():
         return False
     
     try:
+        # シンプルな初期化（余計な引数を渡さない）
         client = OpenAI(api_key=api_key)
         print("✅ OpenAI クライアント初期化成功")
         return True
     except Exception as e:
         print(f"❌ OpenAI初期化エラー: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def extract_frames(video_path, output_dir, interval=1.0):
@@ -415,17 +418,17 @@ def download_pdf():
 # ★★★ 最重要：Gunicorn対応の初期化 ★★★
 # ========================================
 print("\n" + "=" * 60)
-print("🚀 アプリケーション初期化開始")
+print("🚀 アプリケーション初期化")
 print("=" * 60)
 
 # OpenAIクライアントを初期化（Gunicorn起動時も必ず実行）
-if init_openai():
-    print("✅ 初期化完了：アプリケーションは正常に起動しました")
-else:
-    print("⚠️ 警告：OpenAI APIキーが設定されていません")
-    print("   環境変数 OPENAI_API_KEY を確認してください")
+init_success = init_openai()
 
 print("=" * 60 + "\n")
+
+if not init_success:
+    print("⚠️ 警告：OpenAI初期化に失敗しました")
+    print("   アプリは起動しますが、分析機能は使用できません")
 
 # ========================================
 # ローカル開発サーバー起動
